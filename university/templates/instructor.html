@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+{% block content %}
+{% if True %}
+<head>
+  <title>University of Canada</title>
+</head>
+<body style="background-color:#a1d99b">
+  <script>
+  function editemail() {
+    var email_readonly = document.getElementById('email_readonly')
+    var email_editable = document.getElementById('email_editable')
+    var updatebutton = document.getElementById('updatebutton')
+    var okbutton = document.getElementById('okbutton')
+    if(email_readonly.style.display=='inline-block')
+    {
+      email_editable.style.display = 'inline-block'
+      updatebutton.style.display = 'none'
+      okbutton.style.display = 'inline-block'
+      email_readonly.style.display = 'none'
+    }
+    else {
+      email_readonly.style.display = 'inline-block'
+      email_editable.style.display = 'none'
+      updatebutton.style.display = 'inline-block'
+      okbutton.style.display = 'none'
+    }
+
+  }
+  </script>
+  <center>
+    <h1>University of Canada</h1>
+    <h2>Instructor Portal</h2>
+    <hr />
+  </center>
+  <form action={% url 'update_instructor_email' %} method="POST">{% csrf_token %}
+  <div>
+  <h2 style="display:inline-block;"> Instructor Information </h2>
+  <div style="float:right; margin-right:5rem;">
+  <p style="display:inline-block;float:right"><a href="{% url 'logout' %}">Log Out</a></p>
+  </div>
+
+  <div style="line-height: 0.1;">
+  <h4 style="display:inline-block;"> <b>Instructor ID:</b></h4>
+  <p style="display:inline-block;" id="sid">{{instructor_data.instructorid}} </p>
+  </div>
+
+  <div style="line-height: 0.1;" >
+  <p style="display:inline-block;"> <b>Instructor Name: &nbsp;</b></p>
+  <p style="display:inline-block;" id="sfirstname">  {{instructor_data.instructor_first_name}} </p>
+  <p style="display:inline-block;" id="slastname">  {{instructor_data.instructor_last_name}} </p>
+  </div>
+
+  <div style="line-height: 0.1;" >
+  <p style="display:inline-block;"> <b>Faculty: &nbsp;</b></p>
+  <p style="display:inline-block;" id="faculty">  {{instructor_data.faculty}} </p>
+  </div>
+
+  <div style="line-height: 0.1;" >
+  <p style="display:inline-block;"> <b>Primary Email Address: &nbsp;</b></p>
+
+  <p style="display:inline-block;" id="email_readonly" name="email_readonly">  {{instructor_data.instructor_primary_emailid}} </p>
+  <input style="display:none;"  id="email_editable" name="email_editable" value="{{instructor_data.instructor_primary_emailid}}">
+
+
+  <button type="button" onclick="editemail()" id="updatebutton" style="background-color:#e5f5e0;">UPDATE EMAIL</button>
+  <button type="submit" onclick="editemail()" style="display: none" id="okbutton">OK</button>
+
+  </div>
+</form>
+
+  <div>
+  <h2>Add a Course</h2>
+
+  <form action={% url 'add_instructor_course' %} method="POST">{% csrf_token %}
+  <table  width="50%" style="text-align: center">
+
+    <label>Term:</label>&nbsp
+    <select name="term" id="term">
+      <option value="Winter">Winter</option>
+      <option value="Summer">Summer</option>
+      <option value="Fall">Fall</option>
+    </select>&nbsp&nbsp&nbsp&nbsp
+
+    <label>Year:</label>&nbsp
+    <select name="year" id="year">
+      <option value="2020">2020</option>
+      <option value="2021">2021</option>
+    </select>&nbsp&nbsp&nbsp&nbsp
+
+    <label>Choose a course:</label>&nbsp
+    <select name="courseid" id="courseid">
+      {% for course in courses %}
+      <option value="{{ course.courseid }}">{{ course.courseid }}</option>
+      {% endfor %}
+    </select>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+
+
+    <button type="submit" style="background-color:#e5f5e0;">ADD COURSE</button>
+  </table>
+</form>
+  </div>
+
+
+  <div>
+  <h2>Currently Teaching Courses</h2>
+  <table border="1" width="50%" height="200" style="text-align: center">
+      <tr>
+        <th>Term</th>
+        <th>Year</th>
+        <th>Course ID</th>
+        <th>Course Name</th>
+        <th>Drop Course</th>
+      </tr>
+      {% for instructor_enrolment_results in instructor_enrolment %}
+       {% if instructor_enrolment_results.year >= 2020 %}
+        <tr>
+            <td>{{instructor_enrolment_results.term}}</td>
+            <td>{{instructor_enrolment_results.year}}</td>
+            <td>{{instructor_enrolment_results.courseid}}</td>
+
+            {% for courses in course %}
+            {% if courses.courseid == instructor_enrolment_results.courseid %}
+            <td>{{courses.course_name}}</td>
+            {% endif %}
+            {% endfor %}
+            <td style="width:5%;"><button style="background-color:#e5f5e0;" type="button"><a href="/delete_instructor_course/{{instructor_data.instructorid}}/{{instructor_enrolment_results.courseid}}/{{instructor_enrolment_results.term}}/{{instructor_enrolment_results.year}}/">DROP COURSE</a></button></td>
+        </tr>
+
+      {% endif %}
+      {% endfor %}
+  </table>
+  </div>
+
+
+  <div>
+  <h2>Previously Taught Courses</h2>
+  <table border="1" width="50%" height="200" style="text-align: center";>
+     <tr>
+       <th>Term</th>
+       <th>Year</th>
+       <th>Course ID</th>
+       <th>Course Name</th>
+     </tr>
+
+     {% for instructor_enrolment_results in instructor_enrolment %}
+     {% if instructor_enrolment_results.year < 2020 %}
+       <tr>
+           <td>{{instructor_enrolment_results.term}}</td>
+           <td>{{instructor_enrolment_results.year}}</td>
+           <td>{{instructor_enrolment_results.courseid}}</td>
+
+           {% for courses in course %}
+           {% if courses.courseid == instructor_enrolment_results.courseid %}
+           <td>{{courses.course_name}}</td>
+           {% endif %}
+           {% endfor %}
+      </tr>
+
+     {% endif %}
+     {% endfor %}
+  </table>
+  </div>
+
+ {% else %}
+   <p>You are not logged in</p>
+   <a href="{% url 'login' %}">Log In</a>
+ {% endif %}
+ {% endblock %}
+</body>
+  </html>
